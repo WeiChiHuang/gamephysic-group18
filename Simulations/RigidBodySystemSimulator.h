@@ -1,12 +1,41 @@
 #ifndef RIGIDBODYSYSTEMSIMULATOR_h
 #define RIGIDBODYSYSTEMSIMULATOR_h
 #include "Simulator.h"
+#include "collisionDetect.h"
 //add your header for your rigid body system, for e.g.,
 //#include "rigidBodySystem.h" 
 
-#define TESTCASEUSEDTORUNTEST 2
+#define TESTCASEUSEDTORUNTEST 5
 
 class RigidBodySystemSimulator:public Simulator{
+
+private:
+	// Attributes
+	// add your RigidBodySystem data members, for e.g.,
+	// RigidBodySystem * m_pRigidBodySystem; 
+	struct Rigidbox {
+		Vec3 position;
+		Vec3 size;
+		int mass;
+		Quat orientation;
+		Vec3 linearVelocity;
+		Vec3 angularVelocity;
+		Vec3 m_externalForce;
+		Vec3 forceLocation;
+		Vec3 angularMomentum;
+		Mat4 inertiaTensor;
+		Mat4 inertiaTensorInv;
+		Mat4 worldMatrix;
+		Vec3 torque;
+	};
+	std::vector<Rigidbox> rigidboxVector;
+	float m_fGravity = 0.0f;
+	float m_fAddVelocity_x = 0.0f;
+	// UI Attributes
+	Point2D m_mouse;
+	Point2D m_trackmouse;
+	Point2D m_oldtrackmouse;
+
 public:
 	// Construtors
 	RigidBodySystemSimulator();
@@ -32,15 +61,14 @@ public:
 	void setOrientationOf(int i,Quat orientation);
 	void setVelocityOf(int i, Vec3 velocity);
 
-private:
-	// Attributes
-	// add your RigidBodySystem data members, for e.g.,
-	// RigidBodySystem * m_pRigidBodySystem; 
-	Vec3 m_externalForce;
-
-	// UI Attributes
-	Point2D m_mouse;
-	Point2D m_trackmouse;
-	Point2D m_oldtrackmouse;
-	};
+	//AdditionFunctions
+	void force_eular(float timeStep);
+	Vec3 CalculateTorque(const Vec3& force, const Vec3& forceLocation, const Vec3& position);
+	void IntegrateOrientation(Rigidbox& rb, float timeStep);
+	void IntegrateAngularMomentum(Rigidbox& rb, const Vec3& torque, float timeStep);
+	void UpdateInverseInertiaTensor(Rigidbox& rb);
+	void UpdateAngularVelocity(Rigidbox& rb);
+	Quat QuaternionMultiply(const Quat& q1, const Quat& q2);
+	void force_Impulse(CollisionInfo info, Rigidbox& rb1, Rigidbox& rb2);
+};
 #endif
