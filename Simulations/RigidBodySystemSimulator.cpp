@@ -31,7 +31,9 @@ void RigidBodySystemSimulator::initUI(DrawingUtilitiesClass* DUC)
 		break;
 	case 3:
 		TwAddVarRW(DUC->g_pTweakBar, "Gravity", TW_TYPE_FLOAT, &m_fGravity, "min=0 max=10 step=0.001");
-		TwAddVarRW(DUC->g_pTweakBar, "AddVelocity", TW_TYPE_FLOAT, &m_fAddVelocity_x, "min=-1 max=1 step=0.01");
+		TwAddVarRW(DUC->g_pTweakBar, "AddVelocity_X", TW_TYPE_FLOAT, &m_fAddVelocity_x, "min=-1 max=1 step=0.01");
+		TwAddVarRW(DUC->g_pTweakBar, "AddVelocity_Y", TW_TYPE_FLOAT, &m_fAddVelocity_y, "min=-1 max=1 step=0.01");
+		TwAddVarRW(DUC->g_pTweakBar, "AddVelocity_Z", TW_TYPE_FLOAT, &m_fAddVelocity_z, "min=-1 max=1 step=0.01");
 		break;
 	default:break;
 	}
@@ -78,6 +80,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		cout << "\nLinearVelocity: " << rigidboxVector[0].linearVelocity << "\n";
 		cout << "AngularVelocity: " << rigidboxVector[0].angularVelocity << "\n";
 		cout << "point-Velocity: " << rigidboxVector[0].linearVelocity + cross(rigidboxVector[0].angularVelocity,point) << "\n";
+		inputScale = 0.000005f;
 		break;
 	}
 	case 1:
@@ -85,6 +88,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		addRigidBody(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f, 0.6f, 0.5f), 2);
 		setOrientationOf(0, Quat(Vec3(0.0f, 0.0f, 1.0f), (float)(M_PI) * 0.5f));
 		applyForceOnBody(0, Vec3(0.3f, 0.5f, 0.25f), Vec3(1.0f, 1.0f, 0.0f));
+		inputScale = 0.000005f;
 		break;
 	case 2:
 		cout << "Demo 3: Two - rigid - body collision scene.\n";
@@ -95,6 +99,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		applyForceOnBody(0, getPositionOfRigidBody(0)-Vec3(0.3,0.1,0.0), getLinearVelocityOfRigidBody(0));
 		applyForceOnBody(1, getPositionOfRigidBody(1) - Vec3(0.0, 0.2, 0.0), getLinearVelocityOfRigidBody(1));
 		setOrientationOf(0, Quat(Vec3(1.0f, 0.0f, 1.0f), (float)(M_PI) * 0.35f));
+		inputScale = 0.005f;
 		break;
 	case 3:
 		cout << "Demo 4: Complex simulation.\n";
@@ -113,6 +118,7 @@ void RigidBodySystemSimulator::notifyCaseChanged(int testCase)
 		setOrientationOf(0, Quat(Vec3(1.0f, 0.0f, 1.0f), (float)(M_PI) * 0.35f));
 		setOrientationOf(2, Quat(Vec3(1.0f, 0.0f, 1.0f), (float)(M_PI) * 0.25f));
 		setOrientationOf(3, Quat(Vec3(0.0f, 1.0f, 1.0f), (float)(M_PI) * 0.45f));
+		inputScale = 0.005f;
 		break;
 	default:
 		cout << "Empty Test!\n";
@@ -133,7 +139,7 @@ void RigidBodySystemSimulator::externalForcesCalculations(float timeElapsed)
 		Vec3 inputView = Vec3((float)mouseDiff.x, (float)-mouseDiff.y, 0);
 		Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 		// find a proper scale!
-		float inputScale = 0.000005f; //7000fps+ :( so fast
+		//float inputScale = 0.000005f; //7000fps+ :( so fast
 		inputWorld = inputWorld * inputScale;
 		for (size_t i = 0; i < getNumberOfRigidBodies(); i++)
 		{
@@ -171,6 +177,8 @@ void RigidBodySystemSimulator::simulateTimestep(float timeStep)
 		for (int i = 0; i < rigidboxVector.size(); i++) {
 			applyForceOnBody(i, getPositionOfRigidBody(i), Vec3(0.0f, -m_fGravity, 0.0f));
 			applyForceOnBody(i, getPositionOfRigidBody(i), Vec3(m_fAddVelocity_x, 0.0f, 0.0f));
+			applyForceOnBody(i, getPositionOfRigidBody(i), Vec3( 0.0f, m_fAddVelocity_y, 0.0f));
+			applyForceOnBody(i, getPositionOfRigidBody(i), Vec3( 0.0f, 0.0f, m_fAddVelocity_z));
 		}
 		force_eular(timeStep);
 		break;
@@ -264,7 +272,6 @@ void RigidBodySystemSimulator::setVelocityOf(int i, Vec3 velocity)
 
 void RigidBodySystemSimulator::force_eular(float timeStep) {
 
-
 	for (Rigidbox& rb : rigidboxVector) {
 		//for test
 		//Rigidbox& rb = rigidboxVector.at(0);
@@ -311,21 +318,21 @@ void RigidBodySystemSimulator::force_eular(float timeStep) {
 		//wall and floor
 		//hit wall and floor reduce 1% Velocity and L
 		Vec3 wallLimits(5.0f, 7.0f, 5.0f);
-		float reduce = 1.00f;
+		float reduce = 0.99f;
 		if (rb.position.x >= wallLimits.x || rb.position.x <= -wallLimits.x) {
 			rb.linearVelocity.x = -rb.linearVelocity.x;
 			rb.linearVelocity = rb.linearVelocity * reduce;
-			rb.angularMomentum = rb.angularMomentum * reduce;
+			rb.angularMomentum = -rb.angularMomentum * reduce;
 		}
 		if (rb.position.y >= wallLimits.y || rb.position.y <= -0.2) {
 			rb.linearVelocity.y = -rb.linearVelocity.y;
 			rb.linearVelocity = rb.linearVelocity * reduce;
-			rb.angularMomentum = rb.angularMomentum * reduce;
+			rb.angularMomentum = -rb.angularMomentum * reduce;
 		}
 		if (rb.position.z >= wallLimits.z || rb.position.z <= -wallLimits.z) {
 			rb.linearVelocity.z = -rb.linearVelocity.z ;
 			rb.linearVelocity = rb.linearVelocity * reduce;
-			rb.angularMomentum = rb.angularMomentum * reduce;
+			rb.angularMomentum = -rb.angularMomentum * reduce;
 		}
 		
 	}
@@ -333,10 +340,12 @@ void RigidBodySystemSimulator::force_eular(float timeStep) {
 		for (int j = i + 1; j < rigidboxVector.size(); j++) {
 			CollisionInfo  cosInfo = checkCollisionSAT(rigidboxVector.at(i).worldMatrix, rigidboxVector[j].worldMatrix);
 			if (cosInfo.isValid) {
+				//cout << cosInfo.depth<<"\n";
 				force_Impulse(cosInfo, rigidboxVector.at(i), rigidboxVector.at(j));
 			}
 		}
 	}
+	
 }
 
 Vec3 RigidBodySystemSimulator::CalculateTorque(const Vec3& force, const Vec3& forceLocation, const Vec3& position) {
@@ -390,7 +399,10 @@ void RigidBodySystemSimulator::force_Impulse(CollisionInfo cosInfo, Rigidbox& rb
 	Vec3 v_a = (rb1.linearVelocity + cross(rb1.angularVelocity, x_a));
 	Vec3 v_b = (rb2.linearVelocity + cross(rb2.angularVelocity, x_b));
 	Vec3 v_rel = v_a - v_b;
-
+	if (dot(v_rel,n)>0) {
+		// separating
+		return;
+	}
 	// -(1+c)v_rel . n
 	double top = dot(-(1 + c) *  v_rel, n);
 	// 1/Ma + 1/Mb

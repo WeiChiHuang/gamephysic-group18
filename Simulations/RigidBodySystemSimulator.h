@@ -31,6 +31,9 @@ private:
 	std::vector<Rigidbox> rigidboxVector;
 	float m_fGravity = 0.0f;
 	float m_fAddVelocity_x = 0.0f;
+	float m_fAddVelocity_y = 0.0f;
+	float m_fAddVelocity_z= 0.0f;
+	float inputScale = 0.000005f;
 	// UI Attributes
 	Point2D m_mouse;
 	Point2D m_trackmouse;
