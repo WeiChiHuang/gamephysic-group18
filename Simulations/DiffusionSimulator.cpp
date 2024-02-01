@@ -193,10 +193,10 @@ void DiffusionSimulator::diffuseTemperatureImplicit(float timeStep) {
 					A.set_element(index, index, center);
 					A.set_element(index - 1, index, left);
 					A.set_element(index + 1, index, right);
-					A.set_element(index - T.get_m(), index, top);
-					A.set_element(index + T.get_m(), index, down);
-					A.set_element(index - T.get_m() * T.get_n(), index, front);
-					A.set_element(index + T.get_m() * T.get_n(), index, back);
+					A.set_element(index - T.get_d(), index, top);
+					A.set_element(index + T.get_d(), index, down);
+					A.set_element(index - T.get_n() * T.get_d(), index, front);
+					A.set_element(index + T.get_n() * T.get_d(), index, back);
 				}
 			}
 		}
@@ -326,6 +326,20 @@ void DiffusionSimulator::diffuseTemperatureImplicit2D(float timeStep) {
 		for (int j = 0; j < T.get_n(); ++j) {
 				temp_vector_[i][j][0] = x[idx++];
 		}
+	}
+	//left right y z
+	for (int j = 0; j < T.get_n(); ++j) {
+		for (int k = 0; k < T.get_d()	; ++k) {
+				temp_vector_[0][j][0] = boundary_temperature_;
+				temp_vector_[T.get_m() - 1][j][0] = boundary_temperature_;
+		}
+	}
+	// down top  x z
+	for (int i = 0; i < T.get_m(); ++i) {
+		for (int k = 0; k < T.get_d(); ++k) {
+				temp_vector_[i][0][0] = boundary_temperature_;
+				temp_vector_[i][T.get_n() - 1][0] = boundary_temperature_;
+				}
 	}
 }
 
