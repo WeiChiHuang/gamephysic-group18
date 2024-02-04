@@ -121,16 +121,13 @@ void PinballSimulator::notifyCaseChanged(int testCase){
         addRigidWall(Vec3(0.5f, 0.06f, 2.00f), Vec3(0.0f, 1.0f, 0.0f), Vec3(0.01f, 0.25f, 1.55f));
         addRigidWall(Vec3(1.5f, 0.06f, 1.8f), Vec3(0.0f, -1.0f, 0.0f), Vec3(0.01f, 0.25f, 1.7f));
         //You can add any etxra WALL here.
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 3; j++) {
-                addRigidWall(Vec3(0.2f + i * 0.2f, 0.06f, 0.4f + j * 0.3f), Vec3(0.1f, 0.1f, 0.1f), Vec3(0.05f, 0.25f, 0.05f));
+                addRigidWall(Vec3(0.25f + i * 0.3f, 0.06f, 0.2f + j * 0.3f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.01f, 0.25f, 0.1f));
+                addRigidWall(Vec3(0.25f + i * 0.3f, 0.06f, 0.2f + j * 0.3f), Vec3(0.0f, 0.7f, 0.0f), Vec3(0.01f, 0.25f, 0.1f));
+                addRigidWall(Vec3(0.25f + i * 0.3f, 0.06f, 0.2f + j * 0.3f), Vec3(0.0f, -1.0f, 0.0f), Vec3(0.01f, 0.25f, 0.1f));
             }
         }
-
-        for (int i = 0; i < 5; i++) {
-            addRigidWall(Vec3(0.5f + i * 0.3f, 0.06f, -0.25f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.01f, 0.25f, 0.8f));
-        }
-        addRigidWall(Vec3(1.0f, 0.06f, 1.8f), Vec3(0.0f, 1.85f, 0.0f), Vec3(0.01f, 0.25f, 1.0f));
 
         //Pinball
         addPinball();
